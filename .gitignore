@@ -416,3 +416,15 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+#Mac OS files
+.DS_Store
+.AppleDouble
+.LSOverride 
+# MAC Thumbnails
+._*
+# Thumbnails
+.Spotlight-V100
+.Trashes
+# Icon must end with two \r
+Icon?   
