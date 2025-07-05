@@ -27,7 +27,7 @@ namespace SQLUnitTest.Tests.Services
         }
 
         [Fact]
-        public async Task RunTestAsync_UsesHandlerToExecuteTest()
+        public async Task GivenExecutionTestCaseWhenRunTestAsyncShouldInvokeHandlerThenReturnResult()
         {
             var handler = new FakeHandler();
             var runner = new BDDTestRunner(new[] { handler });

@@ -13,7 +13,7 @@ namespace SQLUnitTest.Tests.DependencyInjection
     public class ServiceCollectionExtensionsTests
     {
         [Fact]
-        public void AddSqlUnitTest_RegistersDependencies()
+        public void GivenServiceCollectionWhenAddSqlUnitTestShouldRegisterDependenciesThenServicesResolve()
         {
             var services = new ServiceCollection();
             services.AddSqlUnitTest(new Dictionary<string, string> { { "Default", "Server=.;Database=Test;Trusted_Connection=True;" } });

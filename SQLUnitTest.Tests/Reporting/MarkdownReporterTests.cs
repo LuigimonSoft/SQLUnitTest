@@ -9,7 +9,7 @@ namespace SQLUnitTest.Tests.Reporting
     public class MarkdownReporterTests
     {
         [Fact]
-        public void CreateExecutionReport_IncludesProcedureNameAndResultCount()
+        public void GivenExecutionResultWhenCreateExecutionReportShouldIncludeProcedureNameThenShowResultCount()
         {
             var reporter = new MarkdownReporter();
             var ds = new DataSet();
