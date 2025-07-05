@@ -14,7 +14,7 @@ namespace SQLUnitTest.Reporting
             var sb = new StringBuilder();
             sb.AppendLine($"# Feature: {test.Description ?? test.StoredProcedure}");
             sb.AppendLine();
-            sb.AppendLine("Execution succeeded with " + result.Tables.Count + " result set(s).\n");
+            sb.AppendLine("Execution succeeded with " + result.Tables.Count + " result set(s).");
             return sb.ToString();
         }
     }
