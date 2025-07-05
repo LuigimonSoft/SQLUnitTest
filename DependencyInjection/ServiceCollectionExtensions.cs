@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SQLUnitTest.Repositories;
 using SQLUnitTest.Reporting;
 using SQLUnitTest.Services;
+using SQLUnitTest.Services.Handlers;
 
 namespace SQLUnitTest.DependencyInjection
 {
@@ -15,6 +16,7 @@ namespace SQLUnitTest.DependencyInjection
         {
             services.AddSingleton<IDbRepository>(new AdoDbRepository(connections));
             services.AddSingleton<IMarkdownReporter, MarkdownReporter>();
+            services.AddTransient<ITestCaseHandler, ExecutionTestCaseHandler>();
             services.AddTransient<ITestRunner, BDDTestRunner>();
             return services;
         }

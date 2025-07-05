@@ -13,6 +13,10 @@ This project implements a BDD-style JSON test format and includes utilities for 
 
 The library targets **.NET Standard 2.0** so it can be used from .NET Framework and .NET Core applications.
 
+### Design Principles
+
+The library follows SOLID principles. Test execution logic is separated into discrete *handlers* that implement `ITestCaseHandler`, enabling new test types without modifying the core runner.
+
 ### Test Case Model
 
 The base `TestCase` model contains common BDD fields:

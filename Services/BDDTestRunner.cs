@@ -1,8 +1,8 @@
-using System.Data;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using SQLUnitTest.Models;
-using SQLUnitTest.Repositories;
-using SQLUnitTest.Reporting;
+using SQLUnitTest.Services.Handlers;
 using SQLUnitTest.Services.Models;
 
 namespace SQLUnitTest.Services
@@ -12,31 +12,22 @@ namespace SQLUnitTest.Services
     /// </summary>
     public class BDDTestRunner : ITestRunner
     {
-        private readonly IDbRepository _repository;
-        private readonly IMarkdownReporter _reporter;
+        private readonly IEnumerable<ITestCaseHandler> _handlers;
 
-        public BDDTestRunner(IDbRepository repository, IMarkdownReporter reporter)
+        public BDDTestRunner(IEnumerable<ITestCaseHandler> handlers)
         {
-            _repository = repository;
-            _reporter = reporter;
+            _handlers = handlers;
         }
 
         public async Task<TestResult> RunTestAsync(TestCase testCase)
         {
-            switch (testCase)
+            var handler = _handlers.FirstOrDefault(h => h.CanHandle(testCase));
+            if (handler == null)
             {
-                case ExecutionTestCase exec:
-                    return await RunExecutionTestAsync(exec);
-                default:
-                    return new TestResult { Passed = false, Report = $"Test type {testCase.GetType().Name} not implemented." };
+                return new TestResult { Passed = false, Report = $"Test type {testCase.GetType().Name} not implemented." };
             }
-        }
 
-        private async Task<TestResult> RunExecutionTestAsync(ExecutionTestCase exec)
-        {
-            var ds = await _repository.ExecuteStoredProcedureAsync(exec.StoredProcedure, exec.Parameters, exec.Connection ?? "Default");
-            var report = _reporter.CreateExecutionReport(exec, ds);
-            return new TestResult { Passed = true, Report = report };
+            return await handler.ExecuteAsync(testCase);
         }
     }
 }
