@@ -18,6 +18,6 @@ The library targets **.NET Standard 2.0** so it can be used from .NET Framework 
 The base `TestCase` model contains common BDD fields:
 
 - `Description` – description of the feature or scenario
-- `Contextualizados` – additional context information
-- `Mock` – preconditions used to seed data
+- `Context` – additional context information
+- `Mock` (`MockBlock`) – preconditions used to seed data
 - `Should` – nested expectations

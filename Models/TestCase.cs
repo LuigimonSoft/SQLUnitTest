@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using SQLUnitTest.Models.Mocking;
 
 namespace SQLUnitTest.Models
 {
@@ -15,12 +16,12 @@ namespace SQLUnitTest.Models
         /// <summary>
         /// Context for the test scenario.
         /// </summary>
-        public string? Contextualizados { get; set; }
+        public string? Context { get; set; }
 
         /// <summary>
         /// Object used to mock or seed data prior to execution.
         /// </summary>
-        public object? Mock { get; set; }
+        public MockBlock? Mock { get; set; }
 
         /// <summary>
         /// Collection of nested test cases that describe expectations.
