@@ -12,3 +12,12 @@ This project implements a BDD-style JSON test format and includes utilities for 
 - `DependencyInjection` – registration extensions
 
 The library targets **.NET Standard 2.0** so it can be used from .NET Framework and .NET Core applications.
+
+### Test Case Model
+
+The base `TestCase` model contains common BDD fields:
+
+- `Description` – description of the feature or scenario
+- `Contextualizados` – additional context information
+- `Mock` – preconditions used to seed data
+- `Should` – nested expectations
