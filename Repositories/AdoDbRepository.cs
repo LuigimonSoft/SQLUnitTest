@@ -27,7 +27,7 @@ namespace SQLUnitTest.Repositories
             {
                 foreach (var prop in parameters.GetType().GetProperties())
                 {
-                    cmd.Parameters.AddWithValue(prop.Name, prop.GetValue(parameters) ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue($"@{prop.Name}", prop.GetValue(parameters) ?? DBNull.Value);
                 }
             }
             using var da = new SqlDataAdapter(cmd);
