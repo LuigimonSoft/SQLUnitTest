@@ -60,6 +60,10 @@ namespace SQLUnitTest.Repositories
             {
                 SqlDbType = GetSqlDbType(value)
             };
+            if (param.SqlDbType == SqlDbType.NVarChar)
+            {
+                param.Size = -1; // use NVARCHAR(MAX) by default
+            }
             cmd.Parameters.Add(param);
         }
 
