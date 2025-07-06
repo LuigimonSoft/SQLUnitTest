@@ -27,14 +27,14 @@ namespace SQLUnitTest.Repositories
             {
                 foreach (var kvp in dict)
                 {
-                    cmd.Parameters.AddWithValue($"@{kvp.Key}", kvp.Value ?? DBNull.Value);
+                    AddParameter(cmd, kvp.Key, kvp.Value);
                 }
             }
             else if (parameters != null)
             {
                 foreach (var prop in parameters.GetType().GetProperties())
                 {
-                    cmd.Parameters.AddWithValue($"@{prop.Name}", prop.GetValue(parameters) ?? DBNull.Value);
+                    AddParameter(cmd, prop.Name, prop.GetValue(parameters));
                 }
             }
             using var da = new SqlDataAdapter(cmd);
@@ -52,6 +52,41 @@ namespace SQLUnitTest.Repositories
             await conn.OpenAsync();
             da.Fill(dt);
             return dt;
+        }
+
+        private static void AddParameter(SqlCommand cmd, string name, object? value)
+        {
+            var param = new SqlParameter($"@{name}", value ?? DBNull.Value)
+            {
+                SqlDbType = GetSqlDbType(value)
+            };
+            cmd.Parameters.Add(param);
+        }
+
+        private static SqlDbType GetSqlDbType(object? value)
+        {
+            if (value == null)
+            {
+                return SqlDbType.Variant;
+            }
+
+            var type = Nullable.GetUnderlyingType(value.GetType()) ?? value.GetType();
+
+            return Type.GetTypeCode(type) switch
+            {
+                TypeCode.Boolean => SqlDbType.Bit,
+                TypeCode.Byte => SqlDbType.TinyInt,
+                TypeCode.Int16 => SqlDbType.SmallInt,
+                TypeCode.Int32 => SqlDbType.Int,
+                TypeCode.Int64 => SqlDbType.BigInt,
+                TypeCode.Single => SqlDbType.Real,
+                TypeCode.Double => SqlDbType.Float,
+                TypeCode.Decimal => SqlDbType.Decimal,
+                TypeCode.DateTime => SqlDbType.DateTime,
+                TypeCode.String => SqlDbType.NVarChar,
+                _ => type == typeof(Guid) ? SqlDbType.UniqueIdentifier :
+                     type == typeof(byte[]) ? SqlDbType.VarBinary : SqlDbType.Variant
+            };
         }
     }
 }
