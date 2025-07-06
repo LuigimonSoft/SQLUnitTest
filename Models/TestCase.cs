@@ -25,7 +25,8 @@ namespace SQLUnitTest.Models
 
         /// <summary>
         /// Collection of nested test cases that describe expectations.
+        /// Initialized to an empty list so callers don't need null checks.
         /// </summary>
-        public IList<BaseTestCase>? Should { get; set; }
+        public IList<BaseTestCase> Should { get; set; } = new List<BaseTestCase>();
     }
 }
