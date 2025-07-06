@@ -14,12 +14,12 @@ namespace SQLUnitTest.Tests.Services
         {
             public bool CanHandleCalled { get; private set; }
             public bool ExecuteCalled { get; private set; }
-            public bool CanHandle(TestCase testCase)
+            public bool CanHandle(BaseTestCase testCase)
             {
                 CanHandleCalled = true;
                 return testCase is ExecutionTestCase;
             }
-            public Task<TestResult> ExecuteAsync(TestCase testCase)
+            public Task<TestResult> ExecuteAsync(BaseTestCase testCase)
             {
                 ExecuteCalled = true;
                 return Task.FromResult(new TestResult { Passed = true, Report = "ok" });

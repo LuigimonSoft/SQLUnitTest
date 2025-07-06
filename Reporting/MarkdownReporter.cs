@@ -12,7 +12,10 @@ namespace SQLUnitTest.Reporting
         public string CreateExecutionReport(ExecutionTestCase test, DataSet result)
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"# Feature: {test.Description ?? test.StoredProcedure}");
+            var title = string.IsNullOrWhiteSpace(test.TestName)
+                ? test.StoredProcedure
+                : test.TestName;
+            sb.AppendLine($"# Feature: {title}");
             sb.AppendLine();
             sb.AppendLine("Execution succeeded with " + result.Tables.Count + " result set(s).");
             return sb.ToString();

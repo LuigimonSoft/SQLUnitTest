@@ -4,9 +4,9 @@ using SQLUnitTest.Models.Mocking;
 namespace SQLUnitTest.Models
 {
     /// <summary>
-    /// Base class for all test cases.
+    /// Base class for test case containers.
     /// </summary>
-    public abstract class TestCase
+    public class TestCase
     {
         /// <summary>
         /// Optional description of the test.
@@ -25,7 +25,8 @@ namespace SQLUnitTest.Models
 
         /// <summary>
         /// Collection of nested test cases that describe expectations.
+        /// Initialized to an empty list so callers don't need null checks.
         /// </summary>
-        public IList<TestCase>? Should { get; set; }
+        public IList<BaseTestCase> Should { get; set; } = new List<BaseTestCase>();
     }
 }

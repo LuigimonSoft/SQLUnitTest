@@ -5,10 +5,10 @@ using SQLUnitTest.Services.Models;
 namespace SQLUnitTest.Services
 {
     /// <summary>
-    /// Executes <see cref="TestCase"/> instances.
+    /// Executes <see cref="BaseTestCase"/> instances.
     /// </summary>
     public interface ITestRunner
     {
-        Task<TestResult> RunTestAsync(TestCase testCase);
+        Task<TestResult> RunTestAsync(BaseTestCase testCase);
     }
 }
