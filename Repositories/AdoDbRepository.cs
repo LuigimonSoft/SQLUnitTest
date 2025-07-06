@@ -23,7 +23,14 @@ namespace SQLUnitTest.Repositories
             var ds = new DataSet();
             using var conn = new SqlConnection(_connections[connectionName]);
             using var cmd = new SqlCommand(storedProcedure, conn) { CommandType = CommandType.StoredProcedure };
-            if (parameters != null)
+            if (parameters is IDictionary<string, object> dict)
+            {
+                foreach (var kvp in dict)
+                {
+                    cmd.Parameters.AddWithValue($"@{kvp.Key}", kvp.Value ?? DBNull.Value);
+                }
+            }
+            else if (parameters != null)
             {
                 foreach (var prop in parameters.GetType().GetProperties())
                 {

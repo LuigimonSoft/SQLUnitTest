@@ -7,12 +7,12 @@ namespace SQLUnitTest.Services.Handlers
     /// <summary>
     /// Base helper for implementing <see cref="ITestCaseHandler"/> for a specific test type.
     /// </summary>
-    /// <typeparam name="T">Type of <see cref="TestCase"/> handled.</typeparam>
-    public abstract class TestCaseHandler<T> : ITestCaseHandler where T : TestCase
+    /// <typeparam name="T">Type of <see cref="BaseTestCase"/> handled.</typeparam>
+    public abstract class TestCaseHandler<T> : ITestCaseHandler where T : BaseTestCase
     {
-        public bool CanHandle(TestCase testCase) => testCase is T;
+        public bool CanHandle(BaseTestCase testCase) => testCase is T;
 
-        public Task<TestResult> ExecuteAsync(TestCase testCase)
+        public Task<TestResult> ExecuteAsync(BaseTestCase testCase)
         {
             return ExecuteAsync((T)testCase);
         }

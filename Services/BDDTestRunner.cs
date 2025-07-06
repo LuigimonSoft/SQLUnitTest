@@ -19,7 +19,7 @@ namespace SQLUnitTest.Services
             _handlers = handlers;
         }
 
-        public async Task<TestResult> RunTestAsync(TestCase testCase)
+        public async Task<TestResult> RunTestAsync(BaseTestCase testCase)
         {
             var handler = _handlers.FirstOrDefault(h => h.CanHandle(testCase));
             if (handler == null)
