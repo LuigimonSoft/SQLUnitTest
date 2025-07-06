@@ -3,6 +3,7 @@ using System.Data;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
+using System.Numerics;
 
 namespace SQLUnitTest.Repositories
 {
@@ -60,10 +61,28 @@ namespace SQLUnitTest.Repositories
             {
                 SqlDbType = GetSqlDbType(value)
             };
+
             if (param.SqlDbType == SqlDbType.NVarChar)
             {
                 param.Size = -1; // use NVARCHAR(MAX) by default
             }
+            else if (param.SqlDbType == SqlDbType.Decimal && value != null)
+            {
+                decimal dec = Convert.ToDecimal(value);
+                int[] bits = decimal.GetBits(dec);
+                byte scale = (byte)((bits[3] >> 16) & 0x7F);
+                BigInteger intValue = (new BigInteger((uint)bits[2]) << 64) |
+                                      (new BigInteger((uint)bits[1]) << 32) |
+                                      (uint)bits[0];
+                byte precision = (byte)(intValue.ToString().TrimStart('0').Length);
+                if (precision == 0)
+                {
+                    precision = 1;
+                }
+                param.Precision = precision;
+                param.Scale = scale;
+            }
+
             cmd.Parameters.Add(param);
         }
 
