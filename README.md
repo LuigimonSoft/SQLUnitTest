@@ -25,3 +25,36 @@ The base `TestCase` model contains common BDD fields:
 - `Context` – additional context information
 - `Mock` (`MockBlock`) – preconditions used to seed data
 - `Should` – nested expectations
+
+## Features
+
+* Stored procedure execution and comparison tests
+* Output parameter verification
+* Table result and table comparison helpers
+* Cross-database comparisons
+* Markdown reporting with BDD style output
+
+## Sample JSON
+
+```json
+{
+  "describe": "User report comparison from different data sources",
+  "context": "When retrieving active users filtered by region",
+  "mock": {
+    "preConditions": [
+      { "connection": "MainDb", "query": "INSERT ..." }
+    ]
+  },
+  "should": [
+    {
+      "it": "Compare procedures",
+      "type": "StoredProcedureCompareTestCase",
+      "storedProcedure": "sp_GetUserReport",
+      "parameters": { "ActiveOnly": true }
+    }
+  ]
+}
+```
+
+The runner outputs a concise console summary and a detailed markdown report that can be stored in CI pipelines.
+
