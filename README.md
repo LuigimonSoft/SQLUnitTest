@@ -57,3 +57,4 @@ The base `TestCase` model contains common BDD fields:
 ```
 
 The runner outputs a concise console summary and a detailed markdown report that can be stored in CI pipelines.
+
