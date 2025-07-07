@@ -21,7 +21,7 @@ The library follows SOLID principles. Test execution logic is separated into dis
 
 The base `TestCase` model contains common BDD fields:
 
-- `Description` – description of the feature or scenario
+- `Describe` – description of the feature or scenario
 - `Context` – additional context information
 - `Mock` (`MockBlock`) – preconditions used to seed data
 - `Should` – nested expectations
