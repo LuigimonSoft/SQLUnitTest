@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using SQLUnitTest.Models.Mocking;
+using System.Text.Json.Serialization;
 
 namespace SQLUnitTest.Models
 {
@@ -11,7 +12,8 @@ namespace SQLUnitTest.Models
         /// <summary>
         /// Optional description of the test.
         /// </summary>
-        public string? Description { get; set; }
+        [JsonPropertyName("describe")]
+        public string? Describe { get; set; }
 
         /// <summary>
         /// Context for the test scenario.
