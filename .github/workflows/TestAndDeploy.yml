@@ -10,7 +10,7 @@ jobs:
       matrix:
         configuration: [ "Debug", "Release" ]
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     env:
       Solution_Name: Dotnet_Base_Backend.sln
@@ -24,10 +24,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install .NET 
+      - name: Install .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8.0.x
+
+      - name: Install SQL Server LocalDB
+        run: winget install --id Microsoft.SQLServer.2022.LocalDB --accept-source-agreements --accept-package-agreements
 
       - name: Execute unit test
         run: dotnet test

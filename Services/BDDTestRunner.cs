@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using SQLUnitTest.Models;
 using SQLUnitTest.Services.Handlers;
+using SQLUnitTest.Repositories;
 using SQLUnitTest.Services.Models;
 
 namespace SQLUnitTest.Services
@@ -15,10 +16,12 @@ namespace SQLUnitTest.Services
     public class BDDTestRunner : ITestRunner
     {
         private readonly IEnumerable<ITestCaseHandler> _handlers;
+        private readonly IDbRepository _repository;
 
-        public BDDTestRunner(IEnumerable<ITestCaseHandler> handlers)
+        public BDDTestRunner(IEnumerable<ITestCaseHandler> handlers, IDbRepository repository)
         {
             _handlers = handlers;
+            _repository = repository;
         }
 
         private async Task<TestResult> RunBaseTestAsync(BaseTestCase testCase)
@@ -34,6 +37,14 @@ namespace SQLUnitTest.Services
 
         public async Task<TestResult> RunTestAsync(TestCase testCase)
         {
+            if (testCase.Mock?.PreConditions != null)
+            {
+                foreach (var pre in testCase.Mock.PreConditions)
+                {
+                    await _repository.QueryAsync(pre.Query, pre.Connection);
+                }
+            }
+
             var sb = new StringBuilder();
             var passed = true;
             foreach (var should in testCase.Should)
