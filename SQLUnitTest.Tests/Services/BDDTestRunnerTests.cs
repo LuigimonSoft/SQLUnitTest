@@ -7,6 +7,9 @@ using SQLUnitTest.Services.Handlers;
 using SQLUnitTest.Services.Models;
 using System.Text.Json;
 using Xunit;
+using SQLUnitTest.Repositories;
+using System.Data;
+using SQLUnitTest.Models.Mocking;
 
 namespace SQLUnitTest.Tests.Services
 {
@@ -34,11 +37,30 @@ namespace SQLUnitTest.Tests.Services
             }
         }
 
+        private class FakeRepository : IDbRepository
+        {
+            public List<string> Queries { get; } = new();
+            public List<string> StoredProcedures { get; } = new();
+
+            public Task<DataSet> ExecuteStoredProcedureAsync(string storedProcedure, object? parameters, string connectionName)
+            {
+                StoredProcedures.Add(storedProcedure);
+                return Task.FromResult(new DataSet());
+            }
+
+            public Task<DataTable> QueryAsync(string query, string connectionName)
+            {
+                Queries.Add(query);
+                return Task.FromResult(new DataTable());
+            }
+        }
+
         [Fact]
         public async Task GivenExecutionTestCaseWhenRunTestAsyncShouldInvokeHandlerThenReturnResult()
         {
             var handler = new FakeHandler();
-            var runner = new BDDTestRunner(new[] { handler });
+            var repo = new FakeRepository();
+            var runner = new BDDTestRunner(new[] { handler }, repo);
             var testCase = new TestCase
             {
                 Should =
@@ -56,10 +78,34 @@ namespace SQLUnitTest.Tests.Services
         }
 
         [Fact]
+        public async Task GivenStoredProcedurePreConditionWhenRunTestAsyncExecutesStoredProcedure()
+        {
+            var handler = new FakeHandler();
+            var repo = new FakeRepository();
+            var runner = new BDDTestRunner(new[] { handler }, repo);
+            var testCase = new TestCase
+            {
+                Mock = new MockBlock
+                {
+                    PreConditions = new List<MockQuery>
+                    {
+                        new MockQuery { Connection = "MainDb", Query = "sp_seed", Type = PreConditionType.StoredProcedure }
+                    }
+                },
+                Should = { new ExecutionTestCase { StoredProcedure = "sp" } }
+            };
+
+            await runner.RunTestAsync(testCase);
+
+            repo.StoredProcedures.Should().Contain("sp_seed");
+        }
+
+        [Fact]
         public async Task GivenJsonWhenRunTestAsyncShouldDeserializeThenExecute()
         {
             var handler = new FakeHandler();
-            var runner = new BDDTestRunner(new[] { handler });
+            var repo = new FakeRepository();
+            var runner = new BDDTestRunner(new[] { handler }, repo);
             var json = "{\"should\":[{\"type\":\"ExecutionTestCase\",\"storedProcedure\":\"sp\"}]}";
 
             var result = await runner.RunTestAsync(json);
@@ -74,7 +120,8 @@ namespace SQLUnitTest.Tests.Services
         public async Task GivenComplexJsonWhenRunTestAsyncShouldMaterializeStoredProcedureCompareCase()
         {
             var handler = new FakeHandler();
-            var runner = new BDDTestRunner(new[] { handler });
+            var repo = new FakeRepository();
+            var runner = new BDDTestRunner(new[] { handler }, repo);
             var json = @"{
   ""describe"": ""User report comparison"",
   ""context"": ""Filtering users by region"",
@@ -115,7 +162,8 @@ namespace SQLUnitTest.Tests.Services
         public async Task GivenJsonWithMultipleShouldWhenRunTestAsyncShouldDeserializeAll()
         {
             var handler = new FakeHandler();
-            var runner = new BDDTestRunner(new[] { handler });
+            var repo = new FakeRepository();
+            var runner = new BDDTestRunner(new[] { handler }, repo);
             var json = @"{
   ""describe"": ""User report comparison"",
   ""context"": ""Filtering users by region"",
@@ -160,6 +208,7 @@ namespace SQLUnitTest.Tests.Services
             var pre = deserialized.Mock.PreConditions![0];
             pre.Connection.Should().Be("MainDb");
             pre.Query.Should().Be("INSERT INTO Users ...");
+            pre.Type.Should().Be(PreConditionType.Query);
             deserialized.Should.Should().HaveCount(2);
 
             var result = await runner.RunTestAsync(json);
@@ -173,8 +222,9 @@ namespace SQLUnitTest.Tests.Services
             var c2 = (StoredProcedureCompareTestCase)handler.ExecutedCases[1];
             c2.StoredProcedure.Should().Be("sp_Main2");
             c2.ExpectedStoredProcedure.Should().Be("sp_Expected2");
-            result.Report.Should().Be("ok\nok");
+            result.Report.Should().Be($"ok{Environment.NewLine}ok");
             result.Passed.Should().BeTrue();
+            repo.Queries.Should().ContainSingle(q => q == "INSERT INTO Users ...");
         }
     }
 }
