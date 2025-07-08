@@ -10,7 +10,7 @@ jobs:
       matrix:
         configuration: [ "Debug", "Release" ]
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     env:
       Solution_Name: Dotnet_Base_Backend.sln
@@ -24,10 +24,28 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install .NET 
+      - name: Install .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8.0.x
+
+      - name: Download SQL Server LocalDB Installer
+        run: |
+          Invoke-WebRequest `
+            -Uri "https://go.microsoft.com/fwlink/?linkid=2239263" `
+            -OutFile "$env:TEMP\SqlLocalDB.msi"
+        shell: pwsh
+
+      - name: Install LocalDB silently
+        run: |
+          Start-Process "msiexec.exe" `
+            -ArgumentList "/i `"$env:TEMP\SqlLocalDB.msi`" /quiet /norestart" `
+            -Wait
+        shell: pwsh
+
+      - name: Verify installation
+        run: sqllocaldb info
+        shell: pwsh
 
       - name: Execute unit test
         run: dotnet test

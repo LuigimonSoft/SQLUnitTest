@@ -1,11 +1,15 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using SQLUnitTest.Models;
+using SQLUnitTest.Models.Mocking;
 using SQLUnitTest.Services.Handlers;
+using SQLUnitTest.Repositories;
 using SQLUnitTest.Services.Models;
+using SQLUnitTest.Utilities;
 
 namespace SQLUnitTest.Services
 {
@@ -15,10 +19,12 @@ namespace SQLUnitTest.Services
     public class BDDTestRunner : ITestRunner
     {
         private readonly IEnumerable<ITestCaseHandler> _handlers;
+        private readonly IDbRepository _repository;
 
-        public BDDTestRunner(IEnumerable<ITestCaseHandler> handlers)
+        public BDDTestRunner(IEnumerable<ITestCaseHandler> handlers, IDbRepository repository)
         {
             _handlers = handlers;
+            _repository = repository;
         }
 
         private async Task<TestResult> RunBaseTestAsync(BaseTestCase testCase)
@@ -32,8 +38,49 @@ namespace SQLUnitTest.Services
             return await handler.ExecuteAsync(testCase);
         }
 
+        private async Task RunPreConditionAsync(MockQuery pre)
+        {
+            switch (pre.Type)
+            {
+                case PreConditionType.Query:
+                    await _repository.QueryAsync(pre.Query, pre.Connection);
+                    break;
+                case PreConditionType.StoredProcedure:
+                    await _repository.ExecuteStoredProcedureAsync(pre.Query, null, pre.Connection);
+                    break;
+                case PreConditionType.SqlFile:
+                    var sql = File.ReadAllText(pre.Query);
+                    await _repository.QueryAsync(sql, pre.Connection);
+                    break;
+                case PreConditionType.JsonFile:
+                    var json = File.ReadAllText(pre.Query);
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    options.Converters.Add(new BaseTestCaseJsonConverter());
+                    var fromFile = JsonSerializer.Deserialize<TestCase>(json, options);
+                    if (fromFile?.Mock?.PreConditions != null)
+                    {
+                        foreach (var nested in fromFile.Mock.PreConditions)
+                        {
+                            await RunPreConditionAsync(nested);
+                        }
+                    }
+                    break;
+                case PreConditionType.InstallLocalDb:
+                    await LocalDbInstaller.InstallAsync();
+                    break;
+            }
+        }
+
         public async Task<TestResult> RunTestAsync(TestCase testCase)
         {
+            if (testCase.Mock?.PreConditions != null)
+            {
+                foreach (var pre in testCase.Mock.PreConditions)
+                {
+                    await RunPreConditionAsync(pre);
+                }
+            }
+
             var sb = new StringBuilder();
             var passed = true;
             foreach (var should in testCase.Should)
