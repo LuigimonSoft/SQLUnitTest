@@ -48,8 +48,11 @@ namespace SQLUnitTest.Tests.Integration
 
             var runner = provider.GetRequiredService<ITestRunner>();
 
-            var sqlFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".sql");
-            await File.WriteAllTextAsync(sqlFile, "CREATE PROCEDURE sp_seed AS INSERT INTO Users(Name) VALUES ('Charlie');");
+            var seedFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".sql");
+            await File.WriteAllTextAsync(seedFile, "CREATE PROCEDURE sp_seed AS INSERT INTO Users(Name) VALUES ('Charlie');");
+
+            var countFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".sql");
+            await File.WriteAllTextAsync(countFile, "CREATE PROCEDURE sp_get_total AS SELECT COUNT(*) AS Total FROM Users;");
 
             var jsonFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".json");
             var jsonContent = "{ \"preConditions\" : [ { \"connection\" : \"Default\", \"query\" : \"INSERT INTO Users(Name) VALUES ('Alice'), ('Bob');\", \"type\" : \"Query\" } ] }";
@@ -62,14 +65,15 @@ namespace SQLUnitTest.Tests.Integration
                     PreConditions = new List<MockQuery>
                     {
                         new MockQuery{ Connection="Default", Query="CREATE TABLE Users(Id INT PRIMARY KEY IDENTITY, Name NVARCHAR(50));", Type=PreConditionType.Query },
-                        new MockQuery{ Connection="Default", Query=sqlFile, Type=PreConditionType.SqlFile },
+                        new MockQuery{ Connection="Default", Query=seedFile, Type=PreConditionType.SqlFile },
+                        new MockQuery{ Connection="Default", Query=countFile, Type=PreConditionType.SqlFile },
                         new MockQuery{ Connection="Default", Query="sp_seed", Type=PreConditionType.StoredProcedure },
                         new MockQuery{ Connection="Default", Query=jsonFile, Type=PreConditionType.JsonFile }
                     }
                 },
                 Should = new List<BaseTestCase>
                 {
-                    new ExecutionTestCase { StoredProcedure = "SELECT COUNT(*) AS Total FROM Users;" }
+                    new ExecutionTestCase { StoredProcedure = "sp_get_total" }
                 }
             };
 
