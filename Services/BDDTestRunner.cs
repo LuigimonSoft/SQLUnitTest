@@ -9,7 +9,6 @@ using SQLUnitTest.Models.Mocking;
 using SQLUnitTest.Services.Handlers;
 using SQLUnitTest.Repositories;
 using SQLUnitTest.Services.Models;
-using SQLUnitTest.Utilities;
 
 namespace SQLUnitTest.Services
 {
@@ -64,9 +63,6 @@ namespace SQLUnitTest.Services
                             await RunPreConditionAsync(nested);
                         }
                     }
-                    break;
-                case PreConditionType.InstallLocalDb:
-                    await LocalDbInstaller.InstallAsync();
                     break;
             }
         }

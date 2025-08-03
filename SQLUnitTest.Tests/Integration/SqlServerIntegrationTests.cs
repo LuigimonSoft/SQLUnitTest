@@ -1,39 +1,45 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using SQLUnitTest.Models;
 using SQLUnitTest.Models.Mocking;
 using SQLUnitTest.Reporting;
-using System.Runtime.InteropServices;
-using Microsoft.Data.SqlClient;
+using SQLUnitTest.Repositories;
 using SQLUnitTest.Services;
 using SQLUnitTest.Services.Handlers;
-using SQLUnitTest.Repositories;
 using Xunit;
 
 namespace SQLUnitTest.Tests.Integration
 {
-    public class LocalDbIntegrationTests
+    public class SqlServerIntegrationTests
     {
         [Fact]
         public async Task RunnerExecutesPreConditionsAndStoredProcedure()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (Environment.GetEnvironmentVariable("SQLSERVER_AVAILABLE") != "1")
             {
                 return;
             }
-            var random = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
-            var dbName = random;
-            var dbFile = Path.Combine(Path.GetTempPath(), dbName + ".mdf");
-            var connStr = $"Data Source=(localdb)\\MSSQLLocalDB;Integrated Security=True;AttachDbFilename={dbFile};Initial Catalog={dbName};";
-            var masterStr = "Data Source=(localdb)\\MSSQLLocalDB;Integrated Security=True;Initial Catalog=master;";
-            var connections = new Dictionary<string, string> { { "Default", connStr }, { "Master", masterStr } };
+
+            var masterStr = "Server=localhost,1433;User Id=sa;Password=yourStrong(!)Password;TrustServerCertificate=True";
+
+            var dbName = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+            var createDb = $"CREATE DATABASE [{dbName}]";
+            var connections = new Dictionary<string, string>
+            {
+                { "Default", masterStr + $";Initial Catalog={dbName}" },
+                { "Master", masterStr }
+            };
+
+            var repo = new AdoDbRepository(connections);
+            await repo.QueryAsync(createDb, "Master");
 
             var services = new ServiceCollection();
-            var repo = new AdoDbRepository(connections);
             services.AddSingleton<IDbRepository>(repo);
             services.AddSingleton<IMarkdownReporter, MarkdownReporter>();
             services.AddTransient<ITestCaseHandler, ExecutionTestCaseHandler>();
@@ -55,7 +61,6 @@ namespace SQLUnitTest.Tests.Integration
                 {
                     PreConditions = new List<MockQuery>
                     {
-                        new MockQuery{ Type = PreConditionType.InstallLocalDb },
                         new MockQuery{ Connection="Default", Query="CREATE TABLE Users(Id INT PRIMARY KEY IDENTITY, Name NVARCHAR(50));", Type=PreConditionType.Query },
                         new MockQuery{ Connection="Default", Query=sqlFile, Type=PreConditionType.SqlFile },
                         new MockQuery{ Connection="Default", Query="sp_seed", Type=PreConditionType.StoredProcedure },
@@ -77,12 +82,6 @@ namespace SQLUnitTest.Tests.Integration
             // Clean up database to avoid attach conflicts on subsequent runs
             SqlConnection.ClearAllPools();
             await repo.QueryAsync($"DROP DATABASE [{dbName}];", "Master");
-            File.Delete(dbFile);
-            var logFile = Path.ChangeExtension(dbFile, ".ldf");
-            if (File.Exists(logFile))
-            {
-                File.Delete(logFile);
-            }
         }
     }
 }

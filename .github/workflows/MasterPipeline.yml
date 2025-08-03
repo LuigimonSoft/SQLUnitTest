@@ -6,7 +6,15 @@ on:
 
 jobs: 
   sonarcloud-analysis:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          SA_PASSWORD: "yourStrong(!)Password"
+          ACCEPT_EULA: "Y"
+        ports:
+          - 1433:1433
 
     env:
       Solution_Name: Dotnet_Base_Backend.sln
@@ -14,6 +22,7 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
       SONAR_ORG: "luigimonsoft"
+      SQLSERVER_AVAILABLE: "1"
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -25,23 +34,12 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Download SQL Server LocalDB Installer
+      - name: Wait for SQL Server
         run: |
-          Invoke-WebRequest `
-            -Uri "https://go.microsoft.com/fwlink/?linkid=2239263" `
-            -OutFile "$env:TEMP\SqlLocalDB.msi"
-        shell: pwsh
-
-      - name: Install LocalDB silently
-        run: |
-          Start-Process "msiexec.exe" `
-            -ArgumentList "/i `"$env:TEMP\SqlLocalDB.msi`" /quiet /norestart" `
-            -Wait
-        shell: pwsh
-
-      - name: Verify installation
-        run: sqllocaldb info
-        shell: pwsh
+          for i in {1..30}; do
+            /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'yourStrong(!)Password' -Q 'SELECT 1' && break
+            sleep 1
+          done
 
       - name: install dotnet-coverage
         run: dotnet tool install --global dotnet-coverage
@@ -52,7 +50,7 @@ jobs:
       - name: Cache SonarQube Cloud packages
         uses: actions/cache@v4
         with:
-          path: ~\sonar\cache
+          path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
@@ -60,7 +58,7 @@ jobs:
         id: cache-sonar-scanner
         uses: actions/cache@v4
         with:
-          path: ~\sonar\cache
+          path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar-scanner
           restore-keys: ${{ runner.os }}-sonar-scanner
 

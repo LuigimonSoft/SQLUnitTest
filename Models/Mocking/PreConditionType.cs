@@ -20,11 +20,7 @@ namespace SQLUnitTest.Models.Mocking
         /// <summary>
         /// Path to a .sql file whose contents should be executed.
         /// </summary>
-        SqlFile,
-        /// <summary>
-        /// Ensures LocalDB is installed.
-        /// </summary>
-        InstallLocalDb
+        SqlFile
     }
 }
 
