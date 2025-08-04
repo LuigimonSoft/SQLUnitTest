@@ -14,5 +14,10 @@ namespace SQLUnitTest.Models.Mocking
         /// SQL statement to execute.
         /// </summary>
         public string Query { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Type of precondition to execute. Defaults to <see cref="PreConditionType.Query"/>.
+        /// </summary>
+        public PreConditionType Type { get; set; } = PreConditionType.Query;
     }
 }
