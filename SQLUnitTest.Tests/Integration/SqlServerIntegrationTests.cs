@@ -55,7 +55,8 @@ namespace SQLUnitTest.Tests.Integration
             await File.WriteAllTextAsync(countFile, "CREATE PROCEDURE sp_get_total AS SELECT COUNT(*) AS Total FROM Users;");
 
             var jsonFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".json");
-            var jsonContent = "{ \"preConditions\" : [ { \"connection\" : \"Default\", \"query\" : \"INSERT INTO Users(Name) VALUES ('Alice'), ('Bob');\", \"type\" : \"Query\" } ] }";
+            var jsonContent =
+                "{ \"mock\" : { \"preConditions\" : [ { \"connection\" : \"Default\", \"query\" : \"INSERT INTO Users(Name) VALUES ('Alice'), ('Bob');\", \"type\" : \"Query\" } ] } }";
             await File.WriteAllTextAsync(jsonFile, jsonContent);
 
             var test = new TestCase
