@@ -28,7 +28,7 @@ namespace SQLUnitTest.Tests.Integration
 
             var masterStr = "Server=localhost,1433;User Id=sa;Password=yourStrong(!)Password;TrustServerCertificate=True";
 
-            var dbName = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
+            var dbName = Guid.NewGuid().ToString("N").Substring(0, 8);
             var createDb = $"CREATE DATABASE [{dbName}]";
             var connections = new Dictionary<string, string>
             {
