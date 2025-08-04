@@ -49,13 +49,7 @@ namespace SQLUnitTest.Services
                     await _repository.ExecuteStoredProcedureAsync(pre.Query, null, pre.Connection);
                     break;
                 case PreConditionType.SqlFile:
-                    // Validate file path to prevent directory traversal
-                    var requestedPath = Path.GetFullPath(Path.Combine(AllowedSqlBaseDirectory, pre.Query));
-                    if (!requestedPath.StartsWith(AllowedSqlBaseDirectory))
-                    {
-                        throw new UnauthorizedAccessException("Attempted to access a file outside the allowed directory.");
-                    }
-                    var sql = File.ReadAllText(requestedPath);
+                    var sql = File.ReadAllText(pre.Query);
                     await _repository.QueryAsync(sql, pre.Connection);
                     break;
                 case PreConditionType.JsonFile:
