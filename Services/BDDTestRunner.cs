@@ -3,6 +3,7 @@ using System.Linq;
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using SQLUnitTest.Models;
 using SQLUnitTest.Models.Mocking;
@@ -54,6 +55,7 @@ namespace SQLUnitTest.Services
                 case PreConditionType.JsonFile:
                     var json = File.ReadAllText(pre.Query);
                     var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    options.Converters.Add(new JsonStringEnumConverter());
                     options.Converters.Add(new BaseTestCaseJsonConverter());
                     var fromFile = JsonSerializer.Deserialize<TestCase>(json, options);
                     if (fromFile?.Mock?.PreConditions != null)
@@ -102,6 +104,7 @@ namespace SQLUnitTest.Services
             {
                 PropertyNameCaseInsensitive = true
             };
+            options.Converters.Add(new JsonStringEnumConverter());
             options.Converters.Add(new BaseTestCaseJsonConverter());
 
             var testCase = JsonSerializer.Deserialize<TestCase>(testCaseJson, options);
