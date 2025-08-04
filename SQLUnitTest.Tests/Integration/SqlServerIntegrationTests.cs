@@ -26,7 +26,9 @@ namespace SQLUnitTest.Tests.Integration
                 return;
             }
 
-            var masterStr = "Server=localhost,1433;User Id=sa;Password=yourStrong(!)Password;TrustServerCertificate=True";
+            var sqlUser = Environment.GetEnvironmentVariable("SQLSERVER_USER") ?? "sa";
+            var sqlPassword = Environment.GetEnvironmentVariable("SQLSERVER_PASSWORD") ?? "yourStrong(!)Password";
+            var masterStr = $"Server=localhost,1433;User Id={sqlUser};Password={sqlPassword};TrustServerCertificate=True";
 
             var dbName = Guid.NewGuid().ToString("N").Substring(0, 8);
             var createDb = $"CREATE DATABASE [{dbName}]";
